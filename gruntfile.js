@@ -7,7 +7,7 @@ require('load-grunt-tasks')(grunt);
     watch: {
       scripts: {
         files: ['src/rivington.js'],
-        tasks: ['jshint','babel'],
+        tasks: ['jshint','babel','copy'],
         options: {
           spawn: false,
         },
@@ -21,7 +21,7 @@ require('load-grunt-tasks')(grunt);
         dist: {
           files: [{
             src : 'src/rivington.js',
-            dest : '../Copy-Hero/js/plugins/Rivington.js'
+            dest : 'build/rivington.js'
           }]
         }
     },
@@ -89,6 +89,14 @@ require('load-grunt-tasks')(grunt);
           'minus': ['Date', 'Function','Lang','Math','Number','Object','Seq','String','Util']
         }
       }
+    },
+    copy: {
+        main: {
+            files: [{
+                src: ['build/rivington.js'],
+                dest: '../Copy-Hero/js/plugins/Rivington.js'
+            }]
+        }
     }
   });
 
@@ -97,6 +105,7 @@ require('load-grunt-tasks')(grunt);
   grunt.loadNpmTasks('grunt-lodash');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-copy');
 
   // Default task(s).
   grunt.registerTask('default', ['babel','jshint'],'lodash');
