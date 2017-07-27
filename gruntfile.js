@@ -74,7 +74,7 @@ require('load-grunt-tasks')(grunt);
               //sourceMapName : 'src/build/sourceMap.map'
             },
             src : ['lib/lodash.build.min.js','src/rivington-compiled.js'],
-            dest : '../Copy-Hero/js/plugins/Rivington.js'
+            dest : '../No-Hero/js/plugins/Rivington.js'
         }
     },
     'lodash': {
@@ -94,7 +94,7 @@ require('load-grunt-tasks')(grunt);
         main: {
             files: [{
                 src: ['build/rivington.js'],
-                dest: '../Copy-Hero/js/plugins/Rivington.js'
+                dest: '../No-Hero/js/plugins/Rivington.js'
             }]
         }
     }
