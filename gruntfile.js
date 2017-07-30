@@ -30,7 +30,8 @@ require('load-grunt-tasks')(grunt);
         curly: true,
         eqeqeq: false,
         eqnull: true,
-        browser: false,
+        browser: true,
+        devel: true,
         asi: true,
         sub: true,
         globalstrict: true,
@@ -44,7 +45,6 @@ require('load-grunt-tasks')(grunt);
           $gameMap: true,
           AudioManager: true,
           $gameParty: true,
-          console: true,
           $gameActors: true,
           $gameSelfSwitches: true,
           $gameSystem: true,
@@ -52,7 +52,9 @@ require('load-grunt-tasks')(grunt);
           $dataClasses: true,
           $dataItems: true,
           $dataMap: true,
-          $gameMessage: true
+          $gameMessage: true,
+          $gameTemp: true,
+          $gameInterpreter: true
         },
       },
       with_overrides: {

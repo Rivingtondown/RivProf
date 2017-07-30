@@ -148,6 +148,7 @@ by: RivingtonDown
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
+
   Rivington.calculateItems = function(hvObject) {
     AudioManager.playSe({ name: "Move4", volume: 20, pitch: 180, pan: 0, pos: 0 });
     $gameParty.gainItem($dataItems[hvObject.item], hvObject.yield);
@@ -198,30 +199,10 @@ by: RivingtonDown
     if (currentJobLvl >= hvObject.level) {
       if ($gameActors.actor(thisActor).isLearnedSkill(hvObject.skill)) {
         if ($gameParty.hasItem($dataItems[hvObject.tool],true) || !hvObject.tool) {
-            if (command == 'tree') {
-              $gameMessage.add('Chop down this tree?');
-              $gameMessage.setChoices(['Yes', "No"], 0, -1);
-              $gameMessage.setChoiceCallback(function (choice) {
-                if (choice == 0) {
-                  for (var step = 0; step < currentJobLvl; step++) {
-                    console.log('chop');
-                    //NEEDS MORE CHOPS
-                  }
-                  Rivington.calculateItems(hvObject);
-                  if (hvObject.switch) {
-                    $gameSelfSwitches.setValue([this._mapId, this._eventId, hvObject.switch], true);
-                  }
-                }
-                if (choice == -1) {
-                  return;
-                }
-              });
-            } else {
-              Rivington.calculateItems(hvObject);
-              if (hvObject.switch) {
-                $gameSelfSwitches.setValue([this._mapId, this._eventId, hvObject.switch], true);
-              }
+            if (hvObject.switch) {
+              $gameSelfSwitches.setValue([this._mapId, this._eventId, hvObject.switch], true);
             }
+            Rivington.calculateItems(hvObject);
 
             $gameActors.actor(thisActor).gainJp(hvObject.jp, hvObject.job);
             $gameSystem.createPopup(231, 'left', $dataClasses[hvObject.job].name+' +'+hvObject.jp+' JP')
