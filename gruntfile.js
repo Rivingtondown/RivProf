@@ -46,15 +46,20 @@ require('load-grunt-tasks')(grunt);
           AudioManager: true,
           $gameParty: true,
           $gameActors: true,
+          $gameSwitches : true,
           $gameSelfSwitches: true,
           $gameSystem: true,
           $dataSkills: true,
           $dataClasses: true,
+          $dataActors: true,
           $dataItems: true,
           $dataMap: true,
           $gameMessage: true,
           $gameTemp: true,
-          $gameInterpreter: true
+          $dataMapInfos: true,
+          $gameInterpreter: true,
+          Scene_Map: true,
+          $gameVariables: true
         },
       },
       with_overrides: {

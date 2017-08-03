@@ -56,11 +56,6 @@ var Rivington = Rivington || {};
 * Default 0
 * @default 0
 *
-* @param CarpenterId
-* @desc Class ID of the Carpenter Job
-* Default 0
-* @default 0
-*
 
 @help
 
@@ -72,23 +67,129 @@ by: RivingtonDown
 (function () {
   Rivington.parameters = PluginManager.parameters('Rivington');
 
+  var hvJobList = [];
+  var hvSpawns = [];
 
-  Rivington.GameSystem_initialize = Game_System.prototype.initialize;
-  Game_System.prototype.initialize = function () {
-    Rivington.GameSystem_initialize.call(this);
-    //On Startup
+  Rivington.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
+  DataManager.isDatabaseLoaded = function() {
 
+    if (!Rivington.DataManager_isDatabaseLoaded.call(this)) return false;
+    if (!Rivington._loaded_HV_Classes) {
+      _.forEach(_.compact($dataClasses), function(value) {
+        if (value.meta["Subclass Only"]) {
+          var jobObj = {
+            'id':value.id,
+            'class':value.name,
+            'actor':null,
+            'skills':value.learnSkills
+          }
+          _.forEach(_.compact($dataActors),function(value) {
+            if (value.meta.Subclass && value.meta.Subclass == jobObj.id) {
+              jobObj.actor = value.id;
+            }
+          })
+          hvJobList[value.id] = jobObj;
+        }
 
+      });
+      console.log(hvJobList)
+      Rivington._loaded_HV_Classes = true;
+    }
+    return true;
   };
 
-  Rivington.DataManager_onLoad = DataManager.onLoad
-  DataManager.onLoad = function (object) {
-    Rivington.DataManager_onLoad.call(this, object)
-    if (object === $dataMap) {
-      //On Startup
-    }
-  }
+  Rivington.Scene_Map_start = Scene_Map.prototype.start;
+  Scene_Map.prototype.start = function () {
+      Rivington.Scene_Map_start.call(this);
+      hvSpawns = $gameVariables.value(40) || [];
+      if (!hvSpawns || hvSpawns == "" || hvSpawns == 0) {
+        _.forEach(_.compact($dataMapInfos),(o) => {
+          let MapObj = {};
+          MapObj.name = o.name;
+          MapObj.spawnMap = {
+            "log":false,
+            "mushroom":false,
+            "berry":false,
+            "tree":false,
+            "rice":false
+          };
+          hvSpawns[o.id] = MapObj;
+        })
+      }
+      hvSpawns[$gameMap.mapId()].forage = $dataMap.meta.forage ? $dataMap.meta.forage.trim().split(',') : null;
+      Rivington.spawnHarvest(hvSpawns);
+  };
 
+  Rivington.spawnHarvest = function(hvSpawns) {
+    var hvMap = hvSpawns[$gameMap.mapId()];
+    console.log($gameMap._events);
+    //Clear Common Events
+    for (let i = 0; i < $gameMap._events.length; i++) {
+      if (!!$gameMap._events[i] && $gameMap._events[i]._erased) {
+        $gameMap._events[i] = undefined;
+      }
+    }
+    if (hvMap.forage) {
+      //Spawn Logs
+      if (hvMap.forage.indexOf("log") != -1 && !hvMap.spawnMap.log) {
+        if ($gameVariables.value(3) == 1 || $gameVariables.value(3) % 2 == 0) { //First day and every other day
+          for (let i = 0; i < 2; i++) {
+            $gameMap.copyEventFromMapToRegion(19, 13, 122, false);
+            console.log("spawned logs");
+            hvSpawns[$gameMap.mapId()].spawnMap.log = true;
+          }
+        }
+      }
+      //Spawn Rice
+      if (hvMap.forage.indexOf("rice") != -1 && !hvMap.spawnMap.rice) {
+        if ($gameSwitches.value(4) === true) { //Day
+          for (let i = 0; i < 2; i++) {
+            $gameMap.copyEventFromMapToRegion(19, 26, 124, false);
+            console.log("spawned rice");
+            hvSpawns[$gameMap.mapId()].spawnMap.rice = true;
+          }
+        }
+      }
+      //Spawn Mushrooms
+      if (hvMap.forage.indexOf("mushroom") != -1 && !hvMap.spawnMap.mushroom) {
+        if ($gameSwitches.value(5) === true) { //Night
+          for (let i = 0; i < 3; i++) {
+           $gameMap.copyEventFromMapToRegion(19, 5, 120, false);
+           console.log("spawned mushrooms");
+           hvSpawns[$gameMap.mapId()].spawnMap.mushroom = true;
+          }
+        }
+      }
+      //Spawn Berry Bushes
+      if (hvMap.forage.indexOf("berry") != -1 && !hvMap.spawnMap.berry) {
+        if ($gameSwitches.value(4) === true) { //Day
+          let spawnAmount = 3;
+          _.forEach($gameMap.events(),function(value){
+           if(value._eventData && value._eventData.name=="berry"){
+             spawnAmount--
+           }
+          })
+          for (let i = 0; i < spawnAmount; i++) {
+           $gameMap.copyEventFromMapToRegion(19, 6, 121, false);
+           console.log("spawned berry bushes");
+           hvSpawns[$gameMap.mapId()].spawnMap.berry = true;
+          }
+        }
+      }
+      //Spawn Trees
+      if (hvMap.forage.indexOf("tree") != -1 && !hvMap.spawnMap.tree) {
+        if ($gameVariables.value(3) == 1 || $gameVariables.value(3) % 3 == 0) { //First day and every three days
+          $gameMap.spawnMapEventFrom(19, 14, 125, false);
+          console.log("spawned trees");
+          hvSpawns[$gameMap.mapId()].spawnMap.tree = true;
+        }
+      }
+
+    }
+
+    $gameVariables.setValue(40, hvSpawns);
+
+  }
 
   Rivington.Game_Interpreter_pluginCommand =
       Game_Interpreter.prototype.pluginCommand;
@@ -99,12 +200,6 @@ by: RivingtonDown
           if (command === 'hvTree') this.harvest('Tree', args);
           if (command === 'hvPlant') this.harvest('Plant', args);
       };
-
-  var hvJobs = [];
-  hvJobs[parseInt(Rivington.parameters['ScavengerId'])] = {'class':'Scavenger','actor':parseInt(Rivington.parameters['ScavengerActor'])}
-  hvJobs[parseInt(Rivington.parameters['FarmerId'])] = {'class':'Farmer','actor':parseInt(Rivington.parameters['FarmerActor'])}
-  hvJobs[parseInt(Rivington.parameters['CookId'])] = {'class':'Cook','actor':parseInt(Rivington.parameters['CookActor'])}
-  hvJobs[parseInt(Rivington.parameters['CarpenterId'])] = {'class':'Carpenter','actor':parseInt(Rivington.parameters['CarpenterActor'])}
 
   Rivington.parseComment = function(command,args,eventId) {
     //Create harvestable event by parsing <createHarvest> comment
@@ -190,7 +285,8 @@ by: RivingtonDown
     }
     console.log(hvObject);
 
-    var thisActor = hvJobs[hvObject.job].actor; //store the acting actor id
+    var thisActor = hvJobList[hvObject.job].actor; //store the acting actor id
+    console.log(thisActor);
     var currentJobLvl = $gameActors.actor(thisActor).jpLevel(hvObject.job); //store the actors initial job level
 
     //Make sure Job, Skill, and Tool names are colored in message boxes
