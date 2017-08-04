@@ -69,6 +69,23 @@ by: RivingtonDown
 
   var hvJobList = [];
   var hvSpawns = [];
+  var spawnedTile = false;
+
+  Game_Map.prototype.copyEventFromMapToRegionA = function (mapIdOrigin, eventIdOrigin, regionId, amount, temporary, newIndex, callback) {
+    for (var i = 0; i < amount; i++) {
+      var tile = this.getRandomRegionTile(regionId);
+      if (tile !== undefined) {
+        if (spawnedTile && spawnedTile.x == tile.x && spawnedTile.y == tile.y) {
+          console.log("Can't spawn " + eventIdOrigin + " at X:" + tile.x + " Y:" + tile.y);
+        } else {
+          console.log("Spawned " + eventIdOrigin + " at X:" + tile.x + " Y:" + tile.y);
+          this.copyEventFrom(mapIdOrigin, eventIdOrigin, tile.x, tile.y, temporary, newIndex, callback);
+          spawnedTile = tile;
+        }
+      }
+    }
+    spawnedTile = false;
+  };
 
   Rivington.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
   DataManager.isDatabaseLoaded = function () {
@@ -91,7 +108,7 @@ by: RivingtonDown
           hvJobList[value.id] = jobObj;
         }
       });
-      console.log(hvJobList);
+      //console.log(hvJobList)
       Rivington._loaded_HV_Classes = true;
     }
     return true;
@@ -121,7 +138,7 @@ by: RivingtonDown
 
   Rivington.spawnHarvest = function (hvSpawns) {
     var hvMap = hvSpawns[$gameMap.mapId()];
-    console.log($gameMap._events);
+
     //Clear Common Events
     for (var i = 0; i < $gameMap._events.length; i++) {
       if (!!$gameMap._events[i] && $gameMap._events[i]._erased) {
@@ -133,50 +150,39 @@ by: RivingtonDown
       if (hvMap.forage.indexOf("log") != -1 && !hvMap.spawnMap.log) {
         if ($gameVariables.value(3) == 1 || $gameVariables.value(3) % 2 == 0) {
           //First day and every other day
-          for (var _i = 0; _i < 2; _i++) {
-            $gameMap.copyEventFromMapToRegion(19, 13, 122, false);
-            console.log("spawned logs");
-            hvSpawns[$gameMap.mapId()].spawnMap.log = true;
-          }
+          var spawnAmount = Math.min($gameMap.getRegionTileList(122).length, 2);
+          $gameMap.copyEventFromMapToRegionA(19, 13, 122, spawnAmount, false);
+          console.log("spawned logs");
+          hvSpawns[$gameMap.mapId()].spawnMap.log = true;
         }
       }
       //Spawn Rice
       if (hvMap.forage.indexOf("rice") != -1 && !hvMap.spawnMap.rice) {
         if ($gameSwitches.value(4) === true) {
           //Day
-          for (var _i2 = 0; _i2 < 2; _i2++) {
-            $gameMap.copyEventFromMapToRegion(19, 26, 124, false);
-            console.log("spawned rice");
-            hvSpawns[$gameMap.mapId()].spawnMap.rice = true;
-          }
+          var _spawnAmount = Math.min($gameMap.getRegionTileList(124).length, 3);
+          $gameMap.copyEventFromMapToRegionA(19, 26, 124, _spawnAmount, false);
+          console.log("spawned rice");
+          hvSpawns[$gameMap.mapId()].spawnMap.rice = true;
         }
       }
       //Spawn Mushrooms
       if (hvMap.forage.indexOf("mushroom") != -1 && !hvMap.spawnMap.mushroom) {
         if ($gameSwitches.value(5) === true) {
           //Night
-          for (var _i3 = 0; _i3 < 3; _i3++) {
-            $gameMap.copyEventFromMapToRegion(19, 5, 120, false);
-            console.log("spawned mushrooms");
-            hvSpawns[$gameMap.mapId()].spawnMap.mushroom = true;
-          }
+          var _spawnAmount2 = Math.min($gameMap.getRegionTileList(120).length, 3);
+          $gameMap.copyEventFromMapToRegionA(19, 5, 120, _spawnAmount2, false);
+          console.log("spawned mushrooms");
+          hvSpawns[$gameMap.mapId()].spawnMap.mushroom = true;
         }
       }
       //Spawn Berry Bushes
       if (hvMap.forage.indexOf("berry") != -1 && !hvMap.spawnMap.berry) {
         if ($gameSwitches.value(4) === true) {
           //Day
-          var spawnAmount = 3;
-          _.forEach($gameMap.events(), function (value) {
-            if (value._eventData && value._eventData.name == "berry") {
-              spawnAmount--;
-            }
-          });
-          for (var _i4 = 0; _i4 < spawnAmount; _i4++) {
-            $gameMap.copyEventFromMapToRegion(19, 6, 121, false);
-            console.log("spawned berry bushes");
-            hvSpawns[$gameMap.mapId()].spawnMap.berry = true;
-          }
+          var _spawnAmount3 = Math.min($gameMap.getRegionTileList(121).length, 3);
+          $gameMap.copyEventFromMapToRegionA(19, 6, 121, _spawnAmount3, false);
+          hvSpawns[$gameMap.mapId()].spawnMap.berry = true;
         }
       }
       //Spawn Trees
@@ -294,7 +300,7 @@ by: RivingtonDown
     console.log(hvObject);
 
     var thisActor = hvJobList[hvObject.job].actor; //store the acting actor id
-    console.log(thisActor);
+
     var currentJobLvl = $gameActors.actor(thisActor).jpLevel(hvObject.job); //store the actors initial job level
 
     //Make sure Job, Skill, and Tool names are colored in message boxes

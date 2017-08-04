@@ -42,6 +42,7 @@ require('load-grunt-tasks')(grunt);
           PluginManager: true,
           Game_Interpreter: true,
           Game_System: true,
+          Game_Map: true,
           $gameMap: true,
           AudioManager: true,
           $gameParty: true,
