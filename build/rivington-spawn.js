@@ -9,20 +9,35 @@ Rivington.Spawn = Rivington.Spawn || {};
 * @plugindesc Automated spawning extension for Rivington Harvest.
 * @author RivingtonDown
 *
+* @param Region Spawning
+* @desc Automate event spawning in designated regions. Requires Orange Custom Events.
+* Default true
+* @default true
+*
 * @param EventMap ID
-* @desc ID of Event Map
+* @desc ID of map to copy events from. Requires Orange Custom Events.
+* Default 0
+* @default 0
+*
+* @param Spawn Tracking Variable
+* @desc Designated variable to keep track of map spawns.
 * Default 0
 * @default 0
 *
 @help
 
-Harvest_Spawner
+Rivington_Spawn
 by: RivingtonDown
 
 */
 
 (function () {
-  Rivington.Spawn.parameters = PluginManager.parameters('Rivington_Spawn');
+  Rivington.Parameters = PluginManager.parameters('Rivington_Spawn');
+  Rivington.Param = Rivington.Param || {};
+
+  Rivington.Param.hvSpawn = Boolean(Rivington.Parameters['Region Spawning']);
+  Rivington.Param.hvEventMap = Number(Rivington.Parameters['EventMap ID']);
+  Rivington.Param.hvSpawnVar = Number(Rivington.Parameters['Spawn Tracking Variable']);
 
   var hvSpawns = [];
   var spawnedTile = false;
@@ -91,8 +106,8 @@ by: RivingtonDown
   Rivington.Spawn.Scene_Map_start = Scene_Map.prototype.start;
   Scene_Map.prototype.start = function () {
     Rivington.Spawn.Scene_Map_start.call(this);
-    hvSpawns = $gameVariables.value(40) || [];
-    if (!hvSpawns || hvSpawns == "" || hvSpawns == 0) {
+    hvSpawns = $gameVariables.value(Rivington.Param.hvSpawnVar) || [];
+    if (!hvSpawns || hvSpawns == "" || hvSpawns.length == 0) {
       _.forEach(_.compact($dataMapInfos), function (o) {
         var MapObj = {};
         MapObj.id = o.id;
@@ -105,12 +120,13 @@ by: RivingtonDown
       });
     }
     hvSpawns[$gameMap.mapId()].forage = $dataMap.meta.forage ? $dataMap.meta.forage.trim().split(',') : null;
-    Rivington.Spawn.spawnHarvest(hvSpawns);
+    if (Rivington.Param.hvSpawn) {
+      Rivington.Spawn.spawnHarvest(hvSpawns);
+    }
   };
 
   Rivington.Spawn.spawnHarvest = function (hvSpawns) {
     var hvMap = hvSpawns[$gameMap.mapId()];
-
     //Clear Common Events
     for (var i = 0; i < $gameMap._events.length; i++) {
       if (!!$gameMap._events[i] && $gameMap._events[i]._erased) {
@@ -125,13 +141,13 @@ by: RivingtonDown
           console.log(hvE.name + ' ' + ($gameSwitches.value(hvE.spawnTime[0]) === true || $gameSwitches.value(hvE.spawnTime[1]) === true));
           if ($gameSwitches.value(hvE.spawnTime[0]) === true || $gameSwitches.value(hvE.spawnTime[1]) === true) {
             var spawnAmount = Math.min($gameMap.getRegionTileList(parseInt(hvE.spawnRegion)).length, 2);
-            $gameMap.copyEventFromMapToRegionA(19, parseInt(hvE.eventId), parseInt(hvE.spawnRegion), spawnAmount, false);
+            $gameMap.copyEventFromMapToRegionA(Rivington.Param.hvEventMap, parseInt(hvE.eventId), parseInt(hvE.spawnRegion), spawnAmount, false);
             console.log('spawned ' + hvE.name);
             hvSpawns[$gameMap.mapId()].hvEvents[index].spawned = true;
           }
         }
       });
-      $gameVariables.setValue(40, hvSpawns);
+      $gameVariables.setValue(Rivington.Param.hvSpawnVar, hvSpawns);
     }
   };
 })();

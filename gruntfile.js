@@ -85,11 +85,11 @@ require('load-grunt-tasks')(grunt);
         main: {
             files: [{
                 src: 'build/rivington-harvest.js',
-                dest: '../No-Hero/js/plugins/Rivington-Harvest.js'
+                dest: '../No-Hero/js/plugins/Rivington_Harvest.js'
             },
             {
                 src: 'build/rivington-spawn.js',
-                dest: '../No-Hero/js/plugins/Rivington-Spawn.js'
+                dest: '../No-Hero/js/plugins/Rivington_Spawn.js'
             }]
         }
     }

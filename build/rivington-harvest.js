@@ -30,13 +30,16 @@ Rivington.Harvest = Rivington.Harvest || {};
 
 @help
 
-Harvest_Manager
+Rivington_Harvest
 by: RivingtonDown
 
 */
 
 (function () {
-  Rivington.Harvest.parameters = PluginManager.parameters('Rivington_Harvest');
+  Rivington.Parameters = PluginManager.parameters('Rivington_Harvest');
+  Rivington.Param = Rivington.Param || {};
+
+  //Parameters
 
   var hvJobList = [];
 
