@@ -4,27 +4,6 @@ require('load-grunt-tasks')(grunt);
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    watch: {
-      scripts: {
-        files: ['src/rivington.js'],
-        tasks: ['jshint','babel','copy'],
-        options: {
-          spawn: false,
-        },
-      },
-    },
-    babel: {
-        options: {
-            "sourceMap": false,
-            "presets": ['es2015']
-        },
-        dist: {
-          files: [{
-            src : 'src/rivington.js',
-            dest : 'build/rivington.js'
-          }]
-        }
-    },
     jshint: {
       options: {
         curly: true,
@@ -60,7 +39,8 @@ require('load-grunt-tasks')(grunt);
           $dataMapInfos: true,
           $gameInterpreter: true,
           Scene_Map: true,
-          $gameVariables: true
+          $gameVariables: true,
+          OrangeTimeSystem: true
         },
       },
       with_overrides: {
@@ -69,40 +49,47 @@ require('load-grunt-tasks')(grunt);
           undef: true,
         },
         files: {
-          src: ['src/rivington.js']
+          src: [
+            'src/rivington-harvest.js',
+            'src/rivington-spawn.js'
+          ]
         },
       }
     },
-    uglify: {
-        all_src : {
-            options : {
-              sourceMap : false,
-              compress : false,
-              mangle: false
-              //sourceMapName : 'src/build/sourceMap.map'
-            },
-            src : ['lib/lodash.build.min.js','src/rivington-compiled.js'],
-            dest : '../No-Hero/js/plugins/Rivington.js'
+    babel: {
+        options: {
+            "sourceMap": false,
+            "presets": ['es2015']
+        },
+        dist: {
+          files: [{
+            src : 'src/rivington-harvest.js',
+            dest : 'build/rivington-harvest.js'
+          },
+          {
+            src : 'src/rivington-spawn.js',
+            dest : 'build/rivington-spawn.js'
+          }]
         }
     },
-    'lodash': {
-      'build': {
-        // output location
-        'dest': 'library/lodash.build.js',
-        'options': {
-          // modifiers for prepared builds
-          // modern, strict, compat
-          'modifier': 'strict',
-          'category': ['collection', 'array'],
-          'minus': ['Date', 'Function','Lang','Math','Number','Object','Seq','String','Util']
-        }
-      }
+    watch: {
+      scripts: {
+        files: ['src/rivington-harvest.js','src/rivington-spawn.js'],
+        tasks: ['jshint','babel','copy'],
+        options: {
+          spawn: false,
+        },
+      },
     },
     copy: {
         main: {
             files: [{
-                src: ['build/rivington.js'],
-                dest: '../No-Hero/js/plugins/Rivington.js'
+                src: 'build/rivington-harvest.js',
+                dest: '../No-Hero/js/plugins/Rivington-Harvest.js'
+            },
+            {
+                src: 'build/rivington-spawn.js',
+                dest: '../No-Hero/js/plugins/Rivington-Spawn.js'
             }]
         }
     }
